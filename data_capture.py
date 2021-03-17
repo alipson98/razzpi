@@ -37,6 +37,7 @@ fields = (
     "quat_k",
     "quat_real"
 )
+start_time  = time.time_ns()
 
 fp = open("data.csv", "w")
 
@@ -68,7 +69,7 @@ while True:
     # )
     # print("")
     to_write = (
-        time.time(),
+        time.time_ns() - start_time,
         accel_x,
         accel_y,
         accel_z,
