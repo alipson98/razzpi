@@ -46,7 +46,7 @@ writer.writerow(fields)
 
 while True:
     # TODO: add the sleep back in if we want, but this is to test the write speeds we can theoretically get
-    time.sleep(0.01) 
+    time.sleep(0.01)
     # print("Acceleration:")
     accel_x, accel_y, accel_z = bno.acceleration  # pylint:disable=no-member
     # print("X: %0.6f  Y: %0.6f Z: %0.6f  m/s^2" % (accel_x, accel_y, accel_z))
