@@ -87,9 +87,7 @@ while True:
     # )
     # print("")
     if(state.name = "recording" and mag_z<-15):
-        state = State.flip
-        os.system("echo 255 |sudo tee /sys/class/leds/led0/brightness")
-        break;
+        state = State.flip       
     if(mag_z > 0 and state.name == "standby"):
         os.system("echo 0 |sudo tee /sys/class/leds/led0/brightness")
         state = State.recording
@@ -98,6 +96,7 @@ while True:
         if(mag_z > 0)
             uprighted = True;
         if(uprighted and mag_z < -15)
+            os.system("echo 255 |sudo tee /sys/class/leds/led0/brightness")
             break;
     if(timer > 200):
         timer = 0;
