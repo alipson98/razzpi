@@ -73,16 +73,15 @@ while True:
     #     "I: %0.6f  J: %0.6f K: %0.6f  Real: %0.6f" % (quat_i, quat_j, quat_k, quat_real)
     # )
     # print("")
-    if(recording and mag_z<0)
+    if(recording and mag_z<0):
         os.system("echo 255 |sudo tee /sys/class/leds/led0/brightness")
         break;
-    if(mag_z > 0):
+    if(mag_z > 0 and not recording):
         os.system("echo 0 |sudo tee /sys/class/leds/led0/brightness")
         recording = True
 
 
-    if(recording)
-        os.system("echo 0 |sudo tee /sys/class/leds/led0/brightness")
+    if(recording):
         to_write = (
             time.time_ns() - start_time,
             accel_x,
