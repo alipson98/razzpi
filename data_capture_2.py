@@ -6,6 +6,8 @@ import board
 import busio
 import csv
 import os
+import enum 
+  
 from adafruit_bno08x import (
     BNO_REPORT_ACCELEROMETER,
     BNO_REPORT_GYROSCOPE,
@@ -13,6 +15,12 @@ from adafruit_bno08x import (
     BNO_REPORT_ROTATION_VECTOR,
 )
 from adafruit_bno08x.i2c import BNO08X_I2C
+
+# creating enumerations using class 
+class State(enum.Enum): 
+    standby = 1
+    recording = 2
+    flip = 3
 
 i2c = busio.I2C(board.SCL, board.SDA, frequency=400000)
 bno = BNO08X_I2C(i2c)
@@ -44,10 +52,15 @@ fp = open("data.csv", "w")
 
 writer = writer=csv.writer(fp, delimiter=',',lineterminator='\n')
 writer.writerow(fields)
+
+
 os.system("echo gpio |sudo tee /sys/class/leds/led0/trigger")
 os.system("echo 255 |sudo tee /sys/class/leds/led0/brightness")
 
-recording = False;
+state = State.standby
+timer = 0;
+uprighted = False;
+
 
 while True:
     # TODO: add the sleep back in if we want, but this is to test the write speeds we can theoretically get
@@ -73,15 +86,26 @@ while True:
     #     "I: %0.6f  J: %0.6f K: %0.6f  Real: %0.6f" % (quat_i, quat_j, quat_k, quat_real)
     # )
     # print("")
-    if(recording and mag_z<-15):
+    if(state.name = "recording" and mag_z<-15):
+        state = State.flip
         os.system("echo 255 |sudo tee /sys/class/leds/led0/brightness")
         break;
-    if(mag_z > 0 and not recording):
+    if(mag_z > 0 and state.name == "standby"):
         os.system("echo 0 |sudo tee /sys/class/leds/led0/brightness")
-        recording = True
+        state = State.recording
+    if(state.name = "flip" ):
+        timer = timer + 1;
+        if(mag_z > 0)
+            uprighted = True;
+        if(uprighted and mag_z < -15)
+            break;
+    if(timer > 200):
+        timer = 0;
+        state = State.recording;
+        uprighted = False;
 
 
-    if(recording):
+    if(state.name == "recording" or state.name == "flip"):
         to_write = (
             time.time_ns() - start_time,
             accel_x,
