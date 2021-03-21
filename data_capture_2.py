@@ -44,6 +44,9 @@ fp = open("data.csv", "w")
 
 writer = writer=csv.writer(fp, delimiter=',',lineterminator='\n')
 writer.writerow(fields)
+os.system("echo gpio |sudo tee /sys/class/leds/led0/trigger")
+os.system("echo 255 |sudo tee /sys/class/leds/led0/brightness")
+
 recording = False;
 
 while True:
@@ -71,11 +74,15 @@ while True:
     # )
     # print("")
     if(recording && mag_z<0)
+        os.system("echo 255 |sudo tee /sys/class/leds/led0/brightness")
         break;
     if(mag_z > 0):
+        os.system("echo 0 |sudo tee /sys/class/leds/led0/brightness")
         recording = True
 
+
     if(recording)
+        os.system("echo 0 |sudo tee /sys/class/leds/led0/brightness")
         to_write = (
             time.time_ns() - start_time,
             accel_x,
