@@ -86,16 +86,16 @@ while True:
     #     "I: %0.6f  J: %0.6f K: %0.6f  Real: %0.6f" % (quat_i, quat_j, quat_k, quat_real)
     # )
     # print("")
-    if(state.name = "recording" and mag_z<-15):
+    if(state.name == "recording" and mag_z<-15):
         state = State.flip       
     if(mag_z > 0 and state.name == "standby"):
         os.system("echo 0 |sudo tee /sys/class/leds/led0/brightness")
         state = State.recording
-    if(state.name = "flip" ):
+    if(state.name == "flip" ):
         timer = timer + 1;
-        if(mag_z > 0)
+        if(mag_z > 0):
             uprighted = True;
-        if(uprighted and mag_z < -15)
+        if(uprighted and mag_z < -15):
             os.system("echo 255 |sudo tee /sys/class/leds/led0/brightness")
             break;
     if(timer > 200):
