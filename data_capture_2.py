@@ -70,12 +70,12 @@ while True:
     #     "I: %0.6f  J: %0.6f K: %0.6f  Real: %0.6f" % (quat_i, quat_j, quat_k, quat_real)
     # )
     # print("")
-    if(recording && mag_z<0)
-        break;
+    if(recording and mag_z<0):
+        break
     if(mag_z > 0):
         recording = True
 
-    if(recording)
+    if(recording):
         to_write = (
             time.time_ns() - start_time,
             accel_x,
