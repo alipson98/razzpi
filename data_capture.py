@@ -1,6 +1,5 @@
-# SPDX-FileCopyrightText: 2020 Bryan Siepert, written for Adafruit Industries
-#
-# SPDX-License-Identifier: Unlicense
+from gpiozero import Button
+import sys
 import time
 import board
 import busio
@@ -37,37 +36,26 @@ fields = (
     "quat_k",
     "quat_real"
 )
+
+button = Button(16)
+
 start_time  = time.time_ns()
 
-fp = open("data.csv", "w")
+if len(sys.argv) > 1:
+    fp = open(sys.argv[1], "w")
+else:
+    fp = open("data.csv", "w")
 
 writer = writer=csv.writer(fp, delimiter=',',lineterminator='\n')
 writer.writerow(fields)
+print('Data collection ready')
 
-while True:
-    # TODO: add the sleep back in if we want, but this is to test the write speeds we can theoretically get
-    time.sleep(0.01)
-    # print("Acceleration:")
+def writeData():
     accel_x, accel_y, accel_z = bno.acceleration  # pylint:disable=no-member
-    # print("X: %0.6f  Y: %0.6f Z: %0.6f  m/s^2" % (accel_x, accel_y, accel_z))
-    # print("")
-
-    # print("Gyro:")
     gyro_x, gyro_y, gyro_z = bno.gyro  # pylint:disable=no-member
-    # print("X: %0.6f  Y: %0.6f Z: %0.6f rads/s" % (gyro_x, gyro_y, gyro_z))
-    # print("")
-
-    # print("Magnetometer:")
     mag_x, mag_y, mag_z = bno.magnetic  # pylint:disable=no-member
-    # print("X: %0.6f  Y: %0.6f Z: %0.6f uT" % (mag_x, mag_y, mag_z))
-    # print("")
-
-    # print("Rotation Vector Quaternion:")
     quat_i, quat_j, quat_k, quat_real = bno.quaternion  # pylint:disable=no-member
-    # print(
-    #     "I: %0.6f  J: %0.6f K: %0.6f  Real: %0.6f" % (quat_i, quat_j, quat_k, quat_real)
-    # )
-    # print("")
+
     to_write = (
         time.time_ns() - start_time,
         accel_x,
@@ -86,3 +74,24 @@ while True:
 
     )
     writer.writerow(to_write)
+
+getData = False;
+rejectTimer = 0
+while True:
+
+    # press 'space' to start/pause
+    if button.is_pressed and rejectTimer == 0:
+        rejectTimer = 100
+        if (getData):
+            print('Data collection paused')
+            getData = False
+        else:
+            print('Data collection started')
+            getData = True
+    if rejectTimer > 0:
+        rejectTimer -= 1
+    if getData:
+        writeData()
+
+    time.sleep(0.01)
+
