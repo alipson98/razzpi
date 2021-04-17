@@ -6,6 +6,11 @@ import board
 import busio
 import csv
 import os
+<<<<<<< HEAD
+=======
+import enum 
+  
+>>>>>>> main
 from adafruit_bno08x import (
     BNO_REPORT_ACCELEROMETER,
     BNO_REPORT_GYROSCOPE,
@@ -14,6 +19,15 @@ from adafruit_bno08x import (
 )
 from adafruit_bno08x.i2c import BNO08X_I2C
 
+<<<<<<< HEAD
+=======
+# creating enumerations using class 
+class State(enum.Enum): 
+    standby = 1
+    recording = 2
+    flip = 3
+
+>>>>>>> main
 i2c = busio.I2C(board.SCL, board.SDA, frequency=400000)
 bno = BNO08X_I2C(i2c)
 
@@ -46,6 +60,15 @@ writer = writer=csv.writer(fp, delimiter=',',lineterminator='\n')
 writer.writerow(fields)
 recording = False;
 
+
+os.system("echo gpio |sudo tee /sys/class/leds/led0/trigger")
+os.system("echo 255 |sudo tee /sys/class/leds/led0/brightness")
+
+state = State.standby
+timer = 0;
+uprighted = False;
+
+
 while True:
     # TODO: add the sleep back in if we want, but this is to test the write speeds we can theoretically get
     time.sleep(0.01)
@@ -70,12 +93,34 @@ while True:
     #     "I: %0.6f  J: %0.6f K: %0.6f  Real: %0.6f" % (quat_i, quat_j, quat_k, quat_real)
     # )
     # print("")
+<<<<<<< HEAD
     if(recording and mag_z<0):
         break
     if(mag_z > 0):
         recording = True
 
     if(recording):
+=======
+    if(state.name == "recording" and mag_z<-15):
+        state = State.flip       
+    if(mag_z > 0 and state.name == "standby"):
+        os.system("echo 0 |sudo tee /sys/class/leds/led0/brightness")
+        state = State.recording
+    if(state.name == "flip" ):
+        timer = timer + 1;
+        if(mag_z > 0):
+            uprighted = True;
+        if(uprighted and mag_z < -15):
+            os.system("echo 255 |sudo tee /sys/class/leds/led0/brightness")
+            break;
+    if(timer > 200):
+        timer = 0;
+        state = State.recording;
+        uprighted = False;
+
+
+    if(state.name == "recording" or state.name == "flip"):
+>>>>>>> main
         to_write = (
             time.time_ns() - start_time,
             accel_x,
