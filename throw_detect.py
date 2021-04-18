@@ -1,7 +1,43 @@
 import csv
 import math
 import statistics
+import sys
+import time
+import board
+import busio
+import csv
+from adafruit_bno08x import (
+    BNO_REPORT_ACCELEROMETER,
+    BNO_REPORT_GYROSCOPE,
+    BNO_REPORT_MAGNETOMETER,
+    BNO_REPORT_ROTATION_VECTOR,
+)
+from adafruit_bno08x.i2c import BNO08X_I2C
 
+i2c = busio.I2C(board.SCL, board.SDA, frequency=400000)
+bno = BNO08X_I2C(i2c)
+
+bno.enable_feature(BNO_REPORT_ACCELEROMETER)
+bno.enable_feature(BNO_REPORT_GYROSCOPE)
+bno.enable_feature(BNO_REPORT_MAGNETOMETER)
+bno.enable_feature(BNO_REPORT_ROTATION_VECTOR)
+
+fields = (
+    "time",
+    "accel_x",
+    "accel_y",
+    "accel_z",
+    "gyro_x",
+    "gyro_y",
+    "gyro_z",
+    "mag_x",
+    "mag_y",
+    "mag_z",
+    "quat_i",
+    "quat_j",
+    "quat_k",
+    "quat_real"
+)
 
 def throw_detect(time, accel_x, accel_y, accel_z, accel_mag):
     """
@@ -77,22 +113,22 @@ def throw_detect(time, accel_x, accel_y, accel_z, accel_mag):
 
     print("total of %d throws" % num_throws)
 
-time = []
-accel_x = []
-accel_y = []
-accel_z = []
-accel_mag = []
-with open('mult_throw_1.csv') as f:
-    reader = csv.reader(f)
-    next(reader)
-    for row in reader:
-        time.append(float(row[0]))
-        accel_x.append(float(row[1]))
-        accel_y.append(float(row[2]))
-        accel_z.append(float(row[3]))
-        accel_mag.append(math.sqrt(float(row[1]) ** 2 + float(row[2]) ** 2 + float(row[3]) ** 2))
-
-throw_detect(time, accel_x, accel_y, accel_z, accel_mag)
+#time = []
+#accel_x = []
+#accel_y = []
+#accel_z = []
+#accel_mag = []
+#with open('mult_throw_1.csv') as f:
+#    reader = csv.reader(f)
+#    next(reader)
+#    for row in reader:
+#        time.append(float(row[0]))
+#        accel_x.append(float(row[1]))
+#        accel_y.append(float(row[2]))
+#        accel_z.append(float(row[3]))
+#        accel_mag.append(math.sqrt(float(row[1]) ** 2 + float(row[2]) ** 2 + float(row[3]) ** 2))
+#
+#throw_detect(time, accel_x, accel_y, accel_z, accel_mag)
 
 
 ############
@@ -109,14 +145,10 @@ throw_detect(time, accel_x, accel_y, accel_z, accel_mag)
 i = 0
 num_throws = 0
 def get_next():
-    global i
-    i += 1
-    if i >= len(accel_mag):
-        print(str(num_throws)+ " throws")
-        exit(0)
+    time.sleep(0.01)
+    accel_x, accel_y, accel_z = bno.acceleration
     # also will need to calculate accel_mag here
-    return accel_mag[i] # currently only using these but may modify to use more
-    
+    return math.sqrt(accel_x**2 + accel_y**2 + accel_z**2) # currently only using these but may modify to use more
 
 # constants
 avg_lookback = 10
@@ -149,7 +181,7 @@ while (True): # run forever for now
         if (abs(lookback_arr[-1] - last_avg) > throw_end_jerk and curr_throw_len > min_throw_samples):
             in_flight = False
             num_throws += 1
-            print("Throw of length %d, end at %d" % (curr_throw_len, i))
+            print("Throw of length %d" % (curr_throw_len))
             # could do something else here if we want
     else:
         # print("checking "+str(i))
