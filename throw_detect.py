@@ -152,6 +152,11 @@ def get_next():
     quat_i, quat_j, quat_k, quat_real = bno.quaternion
     return accel_mag, quat_k
 
+def angle_from_vertical(quat_k):
+    #creates a quaternion that represents the vertical axis, p = [0 , 0, 0, 1] (real, i, j, k)
+    # perform pq* to get the difference quaternion, real(pq*) = p1q1 + p2q2 + p3q3 + p4q4 = q4
+    #extract the angle, cos(theta/2) = real(pq*)
+    return 2 * math.degrees(math.acos(quat_k))
 # constants
 avg_lookback = 10
 min_throw_samples = 10
@@ -222,7 +227,7 @@ while (True): # run forever for now
             
             # TODO: here is were to integrate accel_mag_arr from start_sample to release_idx
             # calculate release angle at release_idx
-            
+            print(angle_from_vertical(quat_k_arr(release_idx)))
             # pull enough samples into the array
             # don't need this loop unless avg lookback is larger than forward_len + forward_skip
             # for dummy in range(avg_lookback - (forward_len + forward_skip)):
