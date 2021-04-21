@@ -177,6 +177,10 @@ while len(accel_mag_arr) < lookback_arr_len:
         curr_accel_mag = get_next()
         accel_mag_arr.append(curr_accel_mag)
 
+while len(quat_k_arr) < lookback_arr_len:
+        curr_quat_k = get_next()
+        quat_k_arr.append(curr_quat_k)
+
 while (True): # run forever for now
     if in_flight:
         curr_throw_len += 1
