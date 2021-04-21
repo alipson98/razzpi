@@ -6,7 +6,8 @@ import time
 import board
 import busio
 import csv
-import numpy as np #Varun: I originally used numpy for integration methods, but probably could be written without
+import time
+# import numpy as np #Varun: I originally used numpy for integration methods, but probably could be written without
 
 from adafruit_bno08x import (
     BNO_REPORT_ACCELEROMETER,
@@ -40,6 +41,7 @@ fields = (
     "quat_k",
     "quat_real"
 )
+start_time = time.time_ns()
 
 def throw_detect(time, accel_x, accel_y, accel_z, accel_mag):
     """
@@ -220,7 +222,7 @@ while (True): # run forever for now
             # calculate release angle at release_idx
             
             numPoints = release_idx - start_sample + 1 #91
-            veloc_mag = np.zeros([numPoints])
+            veloc_mag = {0} * numPoints
             dT = .001 #if we choose to make it constant 
             #If we get time vector, then formula is as follows: dT = time[start_sample : release_idx] - time[start_sample - 1 : release_idx - 1]
 
