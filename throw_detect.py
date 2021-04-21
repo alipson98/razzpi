@@ -148,7 +148,9 @@ def get_next():
     time.sleep(0.01)
     accel_x, accel_y, accel_z = bno.acceleration
     # also will need to calculate accel_mag here
-    return math.sqrt(accel_x**2 + accel_y**2 + accel_z**2) # currently only using these but may modify to use more
+    accel_mag =  math.sqrt(accel_x**2 + accel_y**2 + accel_z**2) # currently only using these but may modify to use more
+    quat_i, quat_j, quat_k, quat_real = bno.quaternion
+    return accel_mag, quat_k
 
 # constants
 avg_lookback = 10
@@ -168,37 +170,38 @@ release_sample = 0
 end_sample = 0
 in_flight = False
 
-lookback_arr = []
+accel_mag_arr = []
+quat_k_arr = []
 
-while len(lookback_arr) < lookback_arr_len:
+while len(accel_mag_arr) < lookback_arr_len:
         curr_accel_mag = get_next()
-        lookback_arr.append(curr_accel_mag)
+        accel_mag_arr.append(curr_accel_mag)
 
 while (True): # run forever for now
     if in_flight:
         curr_throw_len += 1
-        last_avg = sum(lookback_arr[len(lookback_arr) - avg_lookback - 1 : len(lookback_arr) - 1]) / avg_lookback
-        if (abs(lookback_arr[-1] - last_avg) > throw_end_jerk and curr_throw_len > min_throw_samples):
+        last_avg = sum(accel_mag_arr[len(accel_mag_arr) - avg_lookback - 1 : len(accel_mag_arr) - 1]) / avg_lookback
+        if (abs(accel_mag_arr[-1] - last_avg) > throw_end_jerk and curr_throw_len > min_throw_samples):
             in_flight = False
             num_throws += 1
             print("Throw of length %d" % (curr_throw_len))
             # could do something else here if we want
     else:
         # print("checking "+str(i))
-        next_avg = sum(lookback_arr[len(lookback_arr) - forward_len - forward_skip : len(lookback_arr) - forward_skip]) / forward_len
-        next_stdev = statistics.stdev(lookback_arr[len(lookback_arr) - forward_len : len(lookback_arr) - forward_skip])
-        if (lookback_arr[len(lookback_arr) - forward_len - forward_skip] - next_avg) > release_peak_height and next_stdev < max_flight_stdev:
+        next_avg = sum(accel_mag_arr[len(accel_mag_arr) - forward_len - forward_skip : len(accel_mag_arr) - forward_skip]) / forward_len
+        next_stdev = statistics.stdev(accel_mag_arr[len(accel_mag_arr) - forward_len : len(accel_mag_arr) - forward_skip])
+        if (accel_mag_arr[len(accel_mag_arr) - forward_len - forward_skip] - next_avg) > release_peak_height and next_stdev < max_flight_stdev:
             curr_throw_len = 0
             in_flight = True
-            # released at lookback_arr[len(lookback_arr) - forward_skip - forward_len]
+            # released at accel_mag_arr[len(accel_mag_arr) - forward_skip - forward_len]
             found = False
-            idx = len(lookback_arr) - forward_skip - forward_len
+            idx = len(accel_mag_arr) - forward_skip - forward_len
             release_idx = idx
             found_positive = False
             invalid = False        
 
             while not found:
-                curr_jerk = lookback_arr[idx] - lookback_arr[idx - 1]
+                curr_jerk = accel_mag_arr[idx] - accel_mag_arr[idx - 1]
                 if curr_jerk > 0:
                     found_positive = True
                 if found_positive and curr_jerk != 0 and curr_jerk < min_throw_jerk:
@@ -213,22 +216,24 @@ while (True): # run forever for now
             # curr_throw_len = forward_len + forward_skip
             print(release_idx - start_sample)
             
-            # TODO: here is were to integrate lookback_arr from start_sample to release_idx
+            # TODO: here is were to integrate accel_mag_arr from start_sample to release_idx
             # calculate release angle at release_idx
             
             # pull enough samples into the array
             # don't need this loop unless avg lookback is larger than forward_len + forward_skip
             # for dummy in range(avg_lookback - (forward_len + forward_skip)):
             #     curr_accel_mag = get_next()
-            #     lookback_arr.pop(0)
-            #     lookback_arr.append(curr_accel_mag)
+            #     accel_mag_arr.pop(0)
+            #     accel_mag_arr.append(curr_accel_mag)
             
             # to get centripetal acceleration, we'll need to modify get_next to also return accel_x and accel_y
             # use curr_accel_x and curr_accel_y to calculate centripetal acceleration of the throw
 
-    next_accel_mag = get_next()
-    lookback_arr.pop(0)
-    lookback_arr.append(next_accel_mag)
+    next_accel_mag, next_quat_k = get_next()
+    accel_mag_arr.pop(0)
+    accel_mag_arr.append(next_accel_mag)
+    quat_k_arr.pop(0)
+    quat_k_arr.append(next_quat_k)
 
 
     
