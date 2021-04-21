@@ -6,6 +6,8 @@ import time
 import board
 import busio
 import csv
+import numpy as np #Varun: I originally used numpy for integration methods, but probably could be written without
+
 from adafruit_bno08x import (
     BNO_REPORT_ACCELEROMETER,
     BNO_REPORT_GYROSCOPE,
@@ -149,7 +151,8 @@ def get_next():
     accel_x, accel_y, accel_z = bno.acceleration
     # also will need to calculate accel_mag here
     return math.sqrt(accel_x**2 + accel_y**2 + accel_z**2) # currently only using these but may modify to use more
-
+    # Varun : We'll need to edit this- Our most accurate integration method came using
+    # math.sqrt(accel_x**2 + accel_y**2 + (accel_z - 9.8)**2) to account for gravity
 # constants
 avg_lookback = 10
 min_throw_samples = 10
@@ -216,6 +219,17 @@ while (True): # run forever for now
             # TODO: here is were to integrate lookback_arr from start_sample to release_idx
             # calculate release angle at release_idx
             
+            numPoints = release_idx - start_sample + 1 #91
+            veloc_mag = np.zeros([numPoints])
+            dT = .001 #if we choose to make it constant 
+            #If we get time vector, then formula is as follows: dT = time[start_sample : release_idx] - time[start_sample - 1 : release_idx - 1]
+
+            for i in range(0, numPoints-1): 
+                veloc_mag[i+1] = veloc_mag[i] + (lookback_arr[i+release_idx+1] * dT) #needs to be dT[i+1] if we use time array
+            
+            release_velocity = veloc_mag[len(veloc_mag) - 1] #last element of array is final velocity
+
+
             # pull enough samples into the array
             # don't need this loop unless avg lookback is larger than forward_len + forward_skip
             # for dummy in range(avg_lookback - (forward_len + forward_skip)):
