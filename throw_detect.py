@@ -189,7 +189,7 @@ while len(quat_k_arr) < lookback_arr_len:
 
 while len(time_arr) < lookback_arr_len:
         next_time, next_accel_mag, next_quat_k = get_next()
-        quat_k_arr.append(next_time)
+        time_arr.append(next_time / (10 ** 9))
 
 while (True): # run forever for now
     if in_flight:
