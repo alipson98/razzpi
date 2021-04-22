@@ -180,12 +180,16 @@ accel_mag_arr = []
 quat_k_arr = []
 
 while len(accel_mag_arr) < lookback_arr_len:
-        curr_accel_mag = get_next()
-        accel_mag_arr.append(curr_accel_mag)
+        next_time, next_accel_mag, next_quat_k = get_next()
+        accel_mag_arr.append(next_accel_mag)
 
 while len(quat_k_arr) < lookback_arr_len:
-        curr_quat_k = get_next()
-        quat_k_arr.append(curr_quat_k)
+        next_time, next_accel_mag, next_quat_k = get_next()
+        quat_k_arr.append(next_quat_k)
+
+while len(time_arr) < lookback_arr_len:
+        next_time, next_accel_mag, next_quat_k = get_next()
+        quat_k_arr.append(next_time)
 
 while (True): # run forever for now
     if in_flight:
@@ -222,13 +226,13 @@ while (True): # run forever for now
                     invalid = True
                     start_sample = 0
                     break
-                
+
             # curr_throw_len = forward_len + forward_skip
             print(release_idx - start_sample)
-            
+
             # TODO: here is were to integrate accel_mag_arr from start_sample to release_idx
             # calculate release angle at release_idx
-            
+
             numPoints = release_idx - start_sample + 1 #91
             veloc_mag = {0} * numPoints
             dT = .001 #if we choose to make it constant 
@@ -237,7 +241,7 @@ while (True): # run forever for now
             for i in range(0, numPoints-1): 
                 dT = time_arr[i+release_idx + 1] - time_arr[i + release_idx]
                 veloc_mag[i+1] = veloc_mag[i] + (accel_mag_arr[i+release_idx+1] * dT) #needs to be dT[i+1] if we use time array
-            
+
             release_velocity = veloc_mag[len(veloc_mag) - 1] #last element of array is final velocity
 
             print("throw found with release velocity: %f" % release_velocity)
@@ -249,7 +253,7 @@ while (True): # run forever for now
             #     curr_accel_mag = get_next()
             #     accel_mag_arr.pop(0)
             #     accel_mag_arr.append(curr_accel_mag)
-            
+
             # to get centripetal acceleration, we'll need to modify get_next to also return accel_x and accel_y
             # use curr_accel_x and curr_accel_y to calculate centripetal acceleration of the throw
 
@@ -260,6 +264,3 @@ while (True): # run forever for now
     accel_mag_arr.append(next_accel_mag)
     quat_k_arr.pop(0)
     quat_k_arr.append(next_quat_k)
-
-
-    
