@@ -227,7 +227,7 @@ while (True): # run forever for now
             
             # TODO: here is were to integrate accel_mag_arr from start_sample to release_idx
             # calculate release angle at release_idx
-            print(angle_from_vertical(quat_k_arr(release_idx)))
+            print(angle_from_vertical(quat_k_arr[release_idx]))
             # pull enough samples into the array
             # don't need this loop unless avg lookback is larger than forward_len + forward_skip
             # for dummy in range(avg_lookback - (forward_len + forward_skip)):
