@@ -240,6 +240,8 @@ while (True): # run forever for now
             
             release_velocity = veloc_mag[len(veloc_mag) - 1] #last element of array is final velocity
 
+            print("throw found with release velocity: %f" % release_velocity)
+
 
             # pull enough samples into the array
             # don't need this loop unless avg lookback is larger than forward_len + forward_skip
@@ -253,7 +255,7 @@ while (True): # run forever for now
 
     next_time, next_accel_mag, next_quat_k = get_next()
     time_arr.pop(0)
-    time_arr.append(next_accel_mag)
+    time_arr.append(next_time / (10 ** 9))
     accel_mag_arr.pop(0)
     accel_mag_arr.append(next_accel_mag)
     quat_k_arr.pop(0)
