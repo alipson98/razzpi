@@ -6,6 +6,9 @@ import time
 import board
 import busio
 import csv
+import time
+# import numpy as np #Varun: I originally used numpy for integration methods, but probably could be written without
+
 from adafruit_bno08x import (
     BNO_REPORT_ACCELEROMETER,
     BNO_REPORT_GYROSCOPE,
@@ -38,6 +41,7 @@ fields = (
     "quat_k",
     "quat_real"
 )
+start_time = time.time_ns()
 
 def throw_detect(time, accel_x, accel_y, accel_z, accel_mag):
     """
@@ -146,11 +150,12 @@ i = 0
 num_throws = 0
 def get_next():
     time.sleep(0.01)
+    curr_time = time.time_ns() - start_time
     accel_x, accel_y, accel_z = bno.acceleration
     # also will need to calculate accel_mag here
-    accel_mag =  math.sqrt(accel_x**2 + accel_y**2 + accel_z**2) # currently only using these but may modify to use more
+    accel_mag =  math.sqrt(accel_x**2 + accel_y**2 + (accel_z - 9.8)**2) # currently only using these but may modify to use more
     quat_i, quat_j, quat_k, quat_real = bno.quaternion
-    return accel_mag, quat_k
+    return curr_time, accel_mag, quat_k
 
 # constants
 avg_lookback = 10
@@ -170,6 +175,7 @@ release_sample = 0
 end_sample = 0
 in_flight = False
 
+time_arr = []
 accel_mag_arr = []
 quat_k_arr = []
 
@@ -223,6 +229,18 @@ while (True): # run forever for now
             # TODO: here is were to integrate accel_mag_arr from start_sample to release_idx
             # calculate release angle at release_idx
             
+            numPoints = release_idx - start_sample + 1 #91
+            veloc_mag = {0} * numPoints
+            dT = .001 #if we choose to make it constant 
+            #If we get time vector, then formula is as follows: dT = time[start_sample : release_idx] - time[start_sample - 1 : release_idx - 1]
+
+            for i in range(0, numPoints-1): 
+                dT = time_arr[i+release_idx + 1] - time_arr[i + release_idx]
+                veloc_mag[i+1] = veloc_mag[i] + (accel_mag_arr[i+release_idx+1] * dT) #needs to be dT[i+1] if we use time array
+            
+            release_velocity = veloc_mag[len(veloc_mag) - 1] #last element of array is final velocity
+
+
             # pull enough samples into the array
             # don't need this loop unless avg lookback is larger than forward_len + forward_skip
             # for dummy in range(avg_lookback - (forward_len + forward_skip)):
@@ -233,7 +251,9 @@ while (True): # run forever for now
             # to get centripetal acceleration, we'll need to modify get_next to also return accel_x and accel_y
             # use curr_accel_x and curr_accel_y to calculate centripetal acceleration of the throw
 
-    next_accel_mag, next_quat_k = get_next()
+    next_time, next_accel_mag, next_quat_k = get_next()
+    time_arr.pop(0)
+    time_arr.append(next_accel_mag)
     accel_mag_arr.pop(0)
     accel_mag_arr.append(next_accel_mag)
     quat_k_arr.pop(0)
