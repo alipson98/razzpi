@@ -234,7 +234,7 @@ while (True): # run forever for now
             # calculate release angle at release_idx
 
             numPoints = release_idx - start_sample + 1 #91
-            veloc_mag = {0} * numPoints
+            veloc_mag = [0] * numPoints
             dT = .001 #if we choose to make it constant 
             #If we get time vector, then formula is as follows: dT = time[start_sample : release_idx] - time[start_sample - 1 : release_idx - 1]
 
