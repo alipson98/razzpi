@@ -153,9 +153,10 @@ def get_next():
     curr_time = time.time_ns() - start_time
     accel_x, accel_y, accel_z = bno.acceleration
     # also will need to calculate accel_mag here
-    accel_mag =  math.sqrt(accel_x**2 + accel_y**2 + (accel_z - 9.8)**2) # currently only using these but may modify to use more
+    accel_mag =  math.sqrt(accel_x**2 + accel_y**2 + accel_z**2) # currently only using these but may modify to use more
+    accel_mag_no_gravity =  math.sqrt(accel_x**2 + accel_y**2 + (accel_z - 9.8)**2) # currently only using these but may modify to use more
     quat_i, quat_j, quat_k, quat_real = bno.quaternion
-    return curr_time, accel_mag, quat_k
+    return curr_time, accel_mag, quat_k, accel_mag_no_gravity
 
 def angle_from_vertical(quat_k):
     #creates a quaternion that represents the vertical axis, p = [0 , 0, 0, 1] (real, i, j, k)
@@ -183,18 +184,22 @@ in_flight = False
 time_arr = []
 accel_mag_arr = []
 quat_k_arr = []
+accel_mag_no_grav_arr = []
 
 while len(accel_mag_arr) < lookback_arr_len:
-        next_time, next_accel_mag, next_quat_k = get_next()
+        next_time, next_accel_mag, next_quat_k, next_no_grav = get_next()
         accel_mag_arr.append(next_accel_mag)
-
-while len(quat_k_arr) < lookback_arr_len:
-        next_time, next_accel_mag, next_quat_k = get_next()
         quat_k_arr.append(next_quat_k)
-
-while len(time_arr) < lookback_arr_len:
-        next_time, next_accel_mag, next_quat_k = get_next()
         time_arr.append(next_time / (10 ** 9))
+        accel_mag_no_grav_arr.append(next_no_grav)
+
+# while len(quat_k_arr) < lookback_arr_len:
+#         next_time, next_accel_mag, next_quat_k = get_next()
+#         quat_k_arr.append(next_quat_k)
+
+# while len(time_arr) < lookback_arr_len:
+#         next_time, next_accel_mag, next_quat_k = get_next()
+#         time_arr.append(next_time / (10 ** 9))
 
 while (True): # run forever for now
     if in_flight:
@@ -246,7 +251,7 @@ while (True): # run forever for now
 
             for i in range(0, numPoints-1): 
                 dT = time_arr[i+release_idx + 1] - time_arr[i + release_idx]
-                veloc_mag[i+1] = veloc_mag[i] + (accel_mag_arr[i+release_idx+1] * dT) #needs to be dT[i+1] if we use time array
+                veloc_mag[i+1] = veloc_mag[i] + (accel_mag_no_grav_arr[i+release_idx+1] * dT) #needs to be dT[i+1] if we use time array
 
             release_velocity = veloc_mag[len(veloc_mag) - 1] #last element of array is final velocity
 
@@ -263,10 +268,12 @@ while (True): # run forever for now
             # to get centripetal acceleration, we'll need to modify get_next to also return accel_x and accel_y
             # use curr_accel_x and curr_accel_y to calculate centripetal acceleration of the throw
 
-    next_time, next_accel_mag, next_quat_k = get_next()
+    next_time, next_accel_mag, next_quat_k, next_no_grav = get_next()
     time_arr.pop(0)
     time_arr.append(next_time / (10 ** 9))
     accel_mag_arr.pop(0)
     accel_mag_arr.append(next_accel_mag)
     quat_k_arr.pop(0)
     quat_k_arr.append(next_quat_k)
+    accel_mag_no_grav_arr.pop(0)
+    accel_mag_no_grav_arr.append(next_no_grav)
