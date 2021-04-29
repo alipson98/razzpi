@@ -248,14 +248,14 @@ while (True): # run forever for now
             # calculate release angle at release_idx
             print("Release angle: %f " % angle_from_vertical(quat_k_arr[release_idx]))
 
-            numPoints = release_idx - start_sample + 1 #91
+            numPoints = release_idx - (start_sample + 1) #91
             veloc_mag = [0] * numPoints
-            dT = .001 #if we choose to make it constant 
+            # dT = .001 #if we choose to make it constant 
             #If we get time vector, then formula is as follows: dT = time[start_sample : release_idx] - time[start_sample - 1 : release_idx - 1]
 
             for i in range(0, numPoints-1): 
-                dT = time_arr[i+release_idx + 1] - time_arr[i + release_idx]
-                veloc_mag[i+1] = veloc_mag[i] + (accel_mag_no_grav_arr[i+release_idx+1] * dT) #needs to be dT[i+1] if we use time array
+                dT = time_arr[i+start_sample + 1] - time_arr[i + start_sample]
+                veloc_mag[i+1] = veloc_mag[i] + (accel_mag_no_grav_arr[i+start_sample+1] * dT) #needs to be dT[i+1] if we use time array
 
             release_velocity = veloc_mag[len(veloc_mag) - 1] #last element of array is final velocity
 
