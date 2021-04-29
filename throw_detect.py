@@ -238,7 +238,9 @@ while (True): # run forever for now
                     break
 
             # curr_throw_len = forward_len + forward_skip
+            print("THROW DETECTED!!!")
             print("samples from throw start to release: %d" % (release_idx - start_sample))
+            print("time from start to release: %d" % (time_arr[release_idx] - time_arr[start_sample]))
 
             # TODO: here is were to integrate accel_mag_arr from start_sample to release_idx
             # calculate release angle at release_idx
