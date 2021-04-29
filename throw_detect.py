@@ -149,7 +149,7 @@ def throw_detect(time, accel_x, accel_y, accel_z, accel_mag):
 i = 0
 num_throws = 0
 def get_next():
-    time.sleep(0.01)
+    time.sleep(0.005)
     curr_time = time.time_ns() - start_time
     accel_x, accel_y, accel_z = bno.acceleration
     # also will need to calculate accel_mag here
