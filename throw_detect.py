@@ -239,7 +239,7 @@ while (True): # run forever for now
 
             # curr_throw_len = forward_len + forward_skip
             print("THROW DETECTED!!!")
-            print("samples from throw start to release: %d" % (release_idx - start_sample))
+            print("samples from throw start to release: %s" % (release_idx - start_sample))
             print("time start: %s" % (time_arr[start_sample] ))
             print("time end: %s" % (time_arr[release_idx] ))
 
