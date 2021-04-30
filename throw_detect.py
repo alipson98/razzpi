@@ -25,23 +25,6 @@ bno.enable_feature(BNO_REPORT_GYROSCOPE)
 bno.enable_feature(BNO_REPORT_MAGNETOMETER)
 bno.enable_feature(BNO_REPORT_ROTATION_VECTOR)
 
-fields = (
-    "time",
-    "accel_x",
-    "accel_y",
-    "accel_z",
-    "gyro_x",
-    "gyro_y",
-    "gyro_z",
-    "mag_x",
-    "mag_y",
-    "mag_z",
-    "quat_i",
-    "quat_j",
-    "quat_k",
-    "quat_real"
-)
-start_time = time.time_ns()
 
 def throw_detect(time, accel_x, accel_y, accel_z, accel_mag):
     """
@@ -152,7 +135,6 @@ def get_next():
     time.sleep(0.005)
     curr_time = time.time_ns() - start_time
     accel_x, accel_y, accel_z = bno.acceleration
-    # also will need to calculate accel_mag here
     accel_mag =  math.sqrt(accel_x**2 + accel_y**2 + accel_z**2) # currently only using these but may modify to use more
     accel_mag_no_gravity =  math.sqrt(accel_x**2 + accel_y**2 + (accel_z - 9.8)**2) # currently only using these but may modify to use more
     quat_i, quat_j, quat_k, quat_real = bno.quaternion
@@ -185,6 +167,21 @@ time_arr = []
 accel_mag_arr = []
 quat_k_arr = []
 accel_mag_no_grav_arr = []
+status_arr = []
+
+fields = (
+    "time",
+    "accel_mag",
+    "quat_k",
+    "accel_mag_no_gravity",
+    "status"
+)
+
+fp = open("data.csv", "w")
+
+writer = writer=csv.writer(fp, delimiter=',',lineterminator='\n')
+writer.writerow(fields)
+start_time = time.time_ns()
 
 while len(accel_mag_arr) < lookback_arr_len:
         next_time, next_accel_mag, next_quat_k, next_no_grav = get_next()
@@ -192,6 +189,7 @@ while len(accel_mag_arr) < lookback_arr_len:
         quat_k_arr.append(next_quat_k)
         time_arr.append(next_time / (10 ** 9))
         accel_mag_no_grav_arr.append(next_no_grav)
+        status_arr.append(0)
 
 # while len(quat_k_arr) < lookback_arr_len:
 #         next_time, next_accel_mag, next_quat_k = get_next()
@@ -237,6 +235,14 @@ while (True): # run forever for now
                     start_sample = 0
                     break
 
+            for i in range(len(status_arr)):
+                if i < start_sample:
+                    status_arr[i] = 0
+                elif i >= start_sample and i < release_idx:
+                    status_arr[i] = 1
+                else:
+                    status_arr[i] = 2
+
             # curr_throw_len = forward_len + forward_skip
             print("THROW DETECTED!!!")
             print("samples from throw start to release: %d" % (release_idx - start_sample))
@@ -273,11 +279,25 @@ while (True): # run forever for now
             # use curr_accel_x and curr_accel_y to calculate centripetal acceleration of the throw
 
     next_time, next_accel_mag, next_quat_k, next_no_grav = get_next()
-    time_arr.pop(0)
+    pop_time = time_arr.pop(0)
     time_arr.append(next_time / (10 ** 9))
-    accel_mag_arr.pop(0)
+    pop_accel_mag = accel_mag_arr.pop(0)
     accel_mag_arr.append(next_accel_mag)
-    quat_k_arr.pop(0)
+    pop_quat_k = quat_k_arr.pop(0)
     quat_k_arr.append(next_quat_k)
-    accel_mag_no_grav_arr.pop(0)
+    pop_accel_mag_no_grav = accel_mag_no_grav_arr.pop(0)
     accel_mag_no_grav_arr.append(next_no_grav)
+    pop_status = status_arr.pop(0)
+    if in_flight:
+        popped_time = status_arr.append(2)
+    else:
+        popped_time = status_arr.append(0)
+    
+    to_write = (
+        pop_time,
+        pop_accel_mag,
+        pop_quat_k,
+        pop_accel_mag_no_grav,
+        pop_status
+    )
+    writer.writerow(to_write)
