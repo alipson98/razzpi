@@ -147,7 +147,7 @@ def angle_from_vertical(quat_k):
     return 2 * math.degrees(math.acos(quat_k))
 # constants
 avg_lookback = 10
-min_throw_samples = 10
+min_throw_samples = 30
 forward_len = 10
 forward_skip = 3
 
@@ -155,7 +155,7 @@ forward_skip = 3
 max_flight_stdev = 3.5
 release_peak_height = 25
 min_throw_jerk = 1
-throw_end_jerk = 5
+throw_end_jerk = 7
 lookback_arr_len = 50
 
 start_sample = 0
