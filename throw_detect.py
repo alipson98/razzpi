@@ -144,7 +144,7 @@ def angle_from_vertical(quat_k):
     #creates a quaternion that represents the vertical axis, p = [0 , 0, 0, 1] (real, i, j, k)
     # perform pq* to get the difference quaternion, real(pq*) = p1q1 + p2q2 + p3q3 + p4q4 = q4
     #extract the angle, cos(theta/2) = real(pq*)
-    return 2 * math.degrees(math.acos(quat_k))
+    return math.abs(180 - (2 * math.degrees(math.acos(quat_k))))
 # constants
 avg_lookback = 10
 min_throw_samples = 30
@@ -234,38 +234,41 @@ while (True): # run forever for now
                     invalid = True
                     start_sample = 0
                     break
-
-            for i in range(len(status_arr)):
-                if i < start_sample:
-                    status_arr[i] = 0
-                elif i >= start_sample and i < release_idx:
-                    status_arr[i] = 1
-                else:
-                    status_arr[i] = 2
-
-            # curr_throw_len = forward_len + forward_skip
-            print("THROW DETECTED!!!")
-            print("samples from throw start to release: %d" % (release_idx - start_sample))
-            print("time start: %s" % (time_arr[start_sample] ))
-            print("time end: %s" % (time_arr[release_idx] ))
-            print("total time: %s" % (time_arr[release_idx] - time_arr[start_sample]))
-
-            # TODO: here is were to integrate accel_mag_arr from start_sample to release_idx
-            # calculate release angle at release_idx
-            print("Release angle: %f " % angle_from_vertical(quat_k_arr[release_idx]))
-
+            
             numPoints = release_idx - (start_sample + 1) #91
             veloc_mag = [0] * numPoints
+            
             # dT = .001 #if we choose to make it constant 
             #If we get time vector, then formula is as follows: dT = time[start_sample : release_idx] - time[start_sample - 1 : release_idx - 1]
+            if numPoints <= 2:
+                release_velocity = 0
+                in_flight = False
+            else:
+                for i in range(len(status_arr)):
+                    if i < start_sample:
+                        status_arr[i] = 0
+                    elif i >= start_sample and i < release_idx:
+                        status_arr[i] = 1
+                    else:
+                        status_arr[i] = 2
 
-            for i in range(0, numPoints-1): 
-                dT = time_arr[i+start_sample + 1] - time_arr[i + start_sample]
-                veloc_mag[i+1] = veloc_mag[i] + (accel_mag_no_grav_arr[i+start_sample+1] * dT) #needs to be dT[i+1] if we use time array
+                # curr_throw_len = forward_len + forward_skip
+                print("THROW DETECTED!!!")
+                print("samples from throw start to release: %d" % (release_idx - start_sample))
+                print("time start: %s" % (time_arr[start_sample] ))
+                print("time end: %s" % (time_arr[release_idx] ))
+                print("total time: %s" % (time_arr[release_idx] - time_arr[start_sample]))
 
-            release_velocity = veloc_mag[len(veloc_mag) - 1] #last element of array is final velocity
+                # TODO: here is were to integrate accel_mag_arr from start_sample to release_idx
+                # calculate release angle at release_idx
+                print("Release angle: %f " % angle_from_vertical(quat_k_arr[release_idx]))
+                for i in range(0, numPoints-1): 
+                    dT = time_arr[i+start_sample + 1] - time_arr[i + start_sample]
+                    veloc_mag[i+1] = veloc_mag[i] + (accel_mag_no_grav_arr[i+start_sample+1] * dT) #needs to be dT[i+1] if we use time array
 
-            print("throw found with release velocity: %f" % release_velocity)
+                release_velocity = veloc_mag[len(veloc_mag) - 1] #last element of array is final velocity
+
+                print("throw found with release velocity: %f" % release_velocity)
 
 
             # pull enough samples into the array
