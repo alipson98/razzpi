@@ -136,6 +136,7 @@ def get_next():
     curr_time = time.time_ns() - start_time
     accel_x, accel_y, accel_z = bno.acceleration
     accel_mag =  math.sqrt(accel_x**2 + accel_y**2 + accel_z**2) # currently only using these but may modify to use more
+    print(accel_z)
     accel_mag_no_gravity =  math.sqrt(accel_x**2 + accel_y**2 + (accel_z + 9.8)**2) # currently only using these but may modify to use more
     quat_i, quat_j, quat_k, quat_real = bno.quaternion
     return curr_time, accel_mag, quat_k, accel_mag_no_gravity
