@@ -254,22 +254,22 @@ while (True): # run forever for now
                         status_arr[i] = 2
 
                 # curr_throw_len = forward_len + forward_skip
-                print("THROW DETECTED!!!")
+                print("\u001b[32mTHROW DETECTED!!!\u001b[0m")
                 print("samples from throw start to release: %d" % (release_idx - start_sample))
-                print("time start: %s" % (time_arr[start_sample] ))
-                print("time end: %s" % (time_arr[release_idx] ))
-                print("total time: %s" % (time_arr[release_idx] - time_arr[start_sample]))
+                # print("time start: %s" % (time_arr[start_sample] ))
+                # print("time end: %s" % (time_arr[release_idx] ))
+                # print("total time: %s" % (time_arr[release_idx] - time_arr[start_sample]))
 
                 # TODO: here is were to integrate accel_mag_arr from start_sample to release_idx
                 # calculate release angle at release_idx
-                print("Release angle: %f " % angle_from_vertical(quat_k_arr[release_idx]))
+                print("\u001b[36mRelease angle: \u001b[0m%f " % angle_from_vertical(quat_k_arr[release_idx]))
                 for i in range(0, numPoints-1): 
                     dT = time_arr[i+start_sample + 1] - time_arr[i + start_sample]
                     veloc_mag[i+1] = veloc_mag[i] + (accel_mag_no_grav_arr[i+start_sample+1] * dT) #needs to be dT[i+1] if we use time array
 
                 release_velocity = veloc_mag[len(veloc_mag) - 1] #last element of array is final velocity
 
-                print("throw found with release velocity: %f" % release_velocity)
+                print("\u001b[36mRelease velocity: \u001b[0m%f" % release_velocity)
 
 
             # pull enough samples into the array
